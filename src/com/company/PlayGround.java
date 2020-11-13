@@ -1,18 +1,31 @@
 package com.company;
+/**
+ * This class puts forces and sets cells of the game.
+ * @author Tanya Djavaherpour
+ * @version 1.0 2020
+ */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
+import com.sun.applet2.AppletParameters;
+
+import java.util.*;
 
 public class PlayGround {
     ////axis --> A
     private Player axis;
     /////allied --> B
     private Player allied;
+    //the int part is x and y of cells location together with this patter x*10+y --> xy
     private HashMap<Integer,String> cells;
+    //the int part is x and y and number of forces together with this patter x*100+y*10+number --> xynumber
     private HashMap<Integer,String> forces;
+    //forces that their location has been changed with the ability of attack
+    private HashMap<Integer,Boolean> changedForces;
+    //bank of visible cards
     private HashMap<String,Integer> cards;
+    //bank of used cards
     private HashMap<String,Integer> usedCards;
+    //target forces
+    private ArrayList<Force> chosenForces;
     //1
     private Card purpleCard ;
     //2
@@ -23,15 +36,23 @@ public class PlayGround {
     private Card greenCard ;
     //5
     private Card cyanCard ;
+    private People people;
+    private Tank tank;
+    private Gunnery gunnery;
 
+    /**
+     * Creates new playground
+     */
     public PlayGround()
     {
         axis = new Player();
         allied = new Player();
         cells = new HashMap<>();
         forces = new HashMap<>();
+        changedForces = new HashMap<>();
         cards = new HashMap<>();
         usedCards = new HashMap<>();
+        chosenForces = new ArrayList<Force>();
         //1
         Card purpleCard = new PurpleCard();
         //2
@@ -42,6 +63,10 @@ public class PlayGround {
         Card greenCard = new GreenCard();
         //5
         Card cyanCard = new CyanCard();
+        people = new People();
+        tank = new Tank();
+        gunnery = new Gunnery();
+        //sets first values of banks
         cards.put(purpleCard.getName(), 6);
         cards.put(yellowCard.getName(), 13);
         cards.put(blueCard.getName(), 10);
@@ -53,45 +78,94 @@ public class PlayGround {
         usedCards.put(greenCard.getName(), 0);
         usedCards.put(cyanCard.getName(), 0);
     }
+
+    /**
+     * Sets two players.
+     * @param p1 as Axis
+     * @param p2 as Allied
+     */
     public void setPlayers(Player p1, Player p2)
     {
         axis = p1;
         allied = p2;
     }
 
+    /**
+     * Gets Axis information
+     * @return axis as Axis
+     */
     public Player getAxis()
     {
         return axis;
     }
 
+    /**
+     * Gets Allied information
+     * @return allied as Allied
+     */
     public Player getAllied()
     {
         return allied;
     }
+
+    /**
+     * Makes location in wanted form --> xy
+     * @param x as x
+     * @param y as y
+     * @return loc as xy
+     */
     public int setLocation(int x, int y)
     {
         int loc = 10 * x + y;
         return loc;
     }
+
+    /**
+     * Sets cell of given location
+     * @param x as x
+     * @param y as y --> first line from top has 1 number
+     * @param cell as name of cell
+     */
     public void defineCells(int x, int y, String cell)
     {
         int loc = setLocation(x, y);
         cells.put(loc, cell);
     }
+
+    /**
+     * Gets cells with their locations
+     * @return cells
+     */
     public HashMap<Integer, String> getCells()
     {
         return cells;
     }
+    /**
+     * Sets force of given location
+     * @param x as x
+     * @param y as y
+     * @param force as name of forces
+     */
     public void defineForces(int x, int y, int number, String force)
     {
         int loc = setLocation(x ,y);
         int key = loc * 10 + number;
         forces.put(key, force);
     }
+    /**
+     * Gets forces with their locations
+     * @return forces
+     */
     public HashMap<Integer, String> getForces()
     {
         return forces;
     }
+    /**
+     * Gives random cards to players.
+     * number of purple = 1, yellow = 2, blue = 3, green = 4, cyan = 5
+     * @param cardNumber as number of wanted cards
+     * @return arrayList of cards
+     */
     public ArrayList<Integer> allocateCards(int cardNumber)
     {
         ArrayList<Integer> choices = new ArrayList<>();
@@ -104,7 +178,7 @@ public class PlayGround {
                     cards.get("green") == 0 &&
                     cards.get("cyan") == 0 )
             {
-                /////////player cars are important
+                /////////player cars are important/////////////////////////////////////////////////////////////////////////
                 cards.replace("purple", 6);
                 cards.replace("yellow", 13);
                 cards.replace("blue", 10);
@@ -156,6 +230,7 @@ public class PlayGround {
         }
         return choices;
     }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////?
     public void chooseCard(String cardName)
     {
         for (String name: cards.keySet())
@@ -168,15 +243,160 @@ public class PlayGround {
             }
         }
     }
-    public void print()
+
+    /**
+     * Changes force location during the game
+     * @param x as x
+     * @param y as y
+     */
+    public void changeForceLocation(int x, int y)
     {
-//        System.out.println("cells: "
-//                + cells.toString());
-        System.out.println("forces: "
-                + forces.toString());
-        System.out.println("cells: "
-                + cells.toString());
-//        System.out.println("used cards: "
-//                + usedCards.toString());
+        int num = 0;
+        int newX = x;
+        int newY = y;
+        int loc = setLocation(x,y);
+        int newLoc;
+        int validMovingNumber ;
+        int movingNumber = 0;
+        if(forces.containsKey(loc*10+1))
+            num = 1;
+        else if(forces.containsKey(loc*10+2))
+            num = 2;
+        else if(forces.containsKey(loc*10+3))
+            num = 3;
+
+        else if(forces.containsKey(loc*10+4))
+            num = 4;
+        System.out.println(forces.get(loc*10+num));
+        if(forces.get(loc*10+num).contains("people"))
+            validMovingNumber = people.getRange();
+
+        else if(forces.get(loc*10+num).contains("tank"))
+            validMovingNumber = tank.getRange();
+
+        else
+            validMovingNumber = gunnery.getRange();
+
+        ArrayList<String> xy = new ArrayList<>();
+        do
+        {
+            movingNumber = 0;
+            System.out.println("Enter directions:");
+            Scanner scanner = new Scanner(System.in);
+            String dir = scanner.nextLine();
+            String[] XY = dir.split(" ");
+            for(int j = 0; j < XY.length; j++)
+                movingNumber += Integer.parseInt(String.valueOf(XY[j].charAt(0)));
+            if(movingNumber > validMovingNumber)
+                System.out.println("ERROR!");
+            else
+            {
+                for(int k = 0; k < XY.length; k++)
+                    xy.add(XY[k]);
+            }
+        }while(movingNumber > validMovingNumber);
+
+        for(int i = 0; i < xy.size(); i++)
+        {
+            if(xy.get(i).charAt(1) == 'L')
+                for(int j = 0 ; j < Integer.parseInt(String.valueOf(xy.get(i).charAt(0))) ; j++)
+                    newX--;
+
+            else if(xy.get(i).charAt(1) == 'R')
+                for(int j = 0 ; j < Integer.parseInt(String.valueOf(xy.get(i).charAt(0))) ; j++)
+                    newX++;
+            else if(xy.get(i).length() > 2)
+            {
+                for(int j = 0 ; j < Integer.parseInt(String.valueOf(xy.get(i).charAt(0))) ; j++)
+                {
+                    if(newY % 2 == 0)
+                    {
+                        if(xy.get(i).charAt(2) == 'R')
+                        {
+                            newX++;
+                            System.out.println(newX + "     NEWX");
+                        }
+                    }
+                    else if(newY % 2 ==1)
+                    {
+                        if(xy.get(i).charAt(2) == 'L')
+                            newX--;
+                    }
+                    if (xy.get(i).charAt(1) == 'U')
+                        newY--;
+                    else if (xy.get(i).charAt(1) == 'D')
+                    {
+                        newY++;
+                        System.out.println(newY + "    NEWY");
+                    }
+                }
+            }
+
+        }
+        newLoc = setLocation(newX, newY);
+        System.out.println(newLoc);
+        forces.put(newLoc*10 + num,forces.get(loc*10+num));
+        if(forces.get(loc*10+num).contains("people"))
+        {
+            changedForces.put(newLoc,people.canAttack(movingNumber));
+            chosenForces.add(people);
+        }
+        else if(forces.get(loc*10+num).contains("tank"))
+        {
+            changedForces.put(newLoc,tank.canAttack(movingNumber));
+            chosenForces.add(tank);
+        }
+        else
+        {
+            changedForces.put(newLoc,gunnery.canAttack(movingNumber));
+            chosenForces.add(gunnery);
+        }
+
+        forces.remove(loc*10+num);
+    }
+
+    /**
+     * Gets a HashMap of forces that thei locations have been changed
+     * @return a HashMap that key is new xy of changed forces and value is their attack ability
+     */
+    public HashMap<Integer,Boolean> getChangedForces()
+    {
+        return changedForces;
+    }
+
+    /**
+     * Clears changedForces when next player should play
+     */
+    public void deleteChangedForces()
+    {
+        changedForces.clear();
+    }
+
+    /**
+     * Gets chosen force respectively
+     * @return chosenForces
+     */
+    public ArrayList<Force> getChosenForces()
+    {
+        return chosenForces;
+    }
+
+    /**
+     * clear chosenForces when next player should play
+     */
+    public void deleteChosenForces()
+    {
+        chosenForces.clear();
+    }
+
+    /**
+     * After every attack updates forces HashMap
+     * @param key as new key of the force
+     */
+    public void updateForceArray(int key)
+    {
+        if(key % 10 != 0)
+          forces.put(key,forces.get(key+1));
+        forces.remove(key+1);
     }
 }

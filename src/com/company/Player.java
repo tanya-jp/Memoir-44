@@ -8,6 +8,7 @@ public class Player {
     private String name;
     private String character;
     private ArrayList<Card> cards;
+    private ArrayList<Integer> chosenForcesLoc;
     //1
     private Card purpleCard = new PurpleCard();
     //2
@@ -22,6 +23,7 @@ public class Player {
     public Player()
     {
         cards = new ArrayList<>();
+        chosenForcesLoc = new ArrayList<>();
     }
 
     public void setName(String name)
@@ -110,7 +112,17 @@ public class Player {
 
     public void chooseForces(int x, int y)
     {
+        chosenForcesLoc.add(10 * x + y);
+    }
 
+    public ArrayList<Integer> getChosenForcesLoc()
+    {
+        return chosenForcesLoc;
+    }
+
+    public void clearChosenForcesLoc()
+    {
+        chosenForcesLoc.clear();
     }
 
     public void chooseTargets(String cardName)

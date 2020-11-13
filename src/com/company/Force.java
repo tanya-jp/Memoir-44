@@ -1,6 +1,10 @@
 package com.company;
 
-public class Force extends Location{
+import java.util.ArrayList;
+
+public abstract class Force extends Location{
+    private int movingNumber;
+    private int range;
     public Force()
     {
         super();
@@ -11,4 +15,15 @@ public class Force extends Location{
     {
         super.setLocation(x,y);
     }
+
+    abstract String getName();
+
+    abstract boolean canAttack(int movingNumber);
+
+    abstract int getRange();
+
+    abstract int getAttackRange();
+
+    abstract int getDiceNumber(int distance);
+
 }

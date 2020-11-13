@@ -1,19 +1,27 @@
 package com.company;
+/**
+ * This class draw playground of the game with forces.
+ * @author Tanya Djavaherpour
+ * @version 1.0 2020
+ */
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 public class Draw {
+    //set colors
     public static final String TEXT_RESET = "\u001B[0m";
     public static final String ANSI_BRIGHT_PURPLE = "\u001B[95m";
     public static final String ANSI_BRIGHT_CYAN   = "\u001B[96m";
     public static final String ANSI_BRIGHT_BG_BLACK  = "\u001B[100m";
     public static final String ANSI_BRIGHT_BLACK  = "\u001B[90m";
     public static final String ANSI_WHITE  = "\u001B[37m";
+    //game's playground
     private PlayGround playGround;
     private HashMap<Integer,String> cellsLocation;
+    //an arrayList of every kind of cell
     private ArrayList<Cell>  cells;
+    //different kinds of cells
     private City city = new City();
     private Bridge bridge = new Bridge();
     private River river = new River();
@@ -21,6 +29,11 @@ public class Draw {
     private Hill hill = new Hill();
     private Ground ground = new Ground();
     private Haven haven = new Haven();
+
+    /**
+     * Creats a new draw class
+     * @param playGround as playground of game
+     */
     public Draw(PlayGround playGround)
     {
         cellsLocation = new HashMap<>();
@@ -34,13 +47,23 @@ public class Draw {
         cells.add(ground);
         cells.add(haven);
     }
+
+    /**
+     * Sets location of cells by getting them from playground class
+     */
     public void setCells()
     {
         this.cellsLocation = this.playGround.getCells();
     }
+
+    /**
+     * this method prints playground
+     * @param str as name of player who is playing now.
+     */
     public void print(String str)
     {
         int len = 0;
+        //checks name of player to print with specific color
         if(str.equals("AXIS"))
         {
             System.out.println(ANSI_BRIGHT_PURPLE);
@@ -70,6 +93,7 @@ public class Draw {
                 loc = i*10 + j;
                 if(playGround.getCells().containsKey(loc))
                 {
+                    //checks kind of cell to print with correct color
                     for (Cell cell : cells) {
                         if (cell.getName().equals(playGround.getCells().get(loc))) {
                             System.out.print(ANSI_BRIGHT_BLACK);
@@ -95,13 +119,11 @@ public class Draw {
                     len = 0;
                     loc = i*10 + j;
                     flag = 0;
-                    String forceString = null;
-//                    if(playGround.getForces().containsKey(loc))
-//                        flag++;
                     int forceNum = 0;
+                    //Checks if there is a force in this cell
                     if(playGround.getForces().containsKey(loc*10))
                     {
-//                        forceNum = 0;
+                        forceNum = 0;
                         flag ++;
                     }
                     else if(playGround.getForces().containsKey(loc*10+1))
@@ -124,7 +146,6 @@ public class Draw {
                         forceNum = 4;
                         flag ++;
                     }
-//                    System.out.println(flag);
                     if(flag > 0 && k == 1)
                     {
                         String playerName;
@@ -140,7 +161,6 @@ public class Draw {
                             len = playerName.length();
                             System.out.print(ANSI_BRIGHT_CYAN+playerName+TEXT_RESET);
                         }
-//                        forceString = playerName;
                     }
 
                     else if(flag > 0 && k==2)
@@ -189,26 +209,6 @@ public class Draw {
             System.out.println();
 
         }
-//        for(int i = 1; i <= 13 ; i++)
-//        {
-//            loc = i*10 + 1;
-//            if(playGround.getCells().containsKey(loc))
-//            {
-//                for (Cell cell : cells) {
-//                    if (cell.getName().equals(playGround.getCells().get(loc))) {
-//                        System.out.print(cell.getColor() + cell.getName().charAt(0) +" "+
-//                                cell.getName().charAt(0) +" "+ cell.getName().charAt(0) +
-//                                " "+cell.getName().charAt(0) + TEXT_RESET+" ");
-//                        flag++;
-//
-//                    }
-//                }
-//            }
-//            else
-//                System.out.print(ground.getColor()+ground.getName().charAt(0)+" "+
-//                        ground.getName().charAt(0)+" "+ground.getName().charAt(0)+
-//                        " "+ground.getName().charAt(0)+TEXT_RESET+" ");
-//        }
     }
 
 }
