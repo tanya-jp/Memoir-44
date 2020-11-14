@@ -3,12 +3,21 @@ package com.company;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.lang.Math;
 
 public class Play {
     private PlayGround playGround;
     private Player player1;
     private Player player2;
     private Draw draw;
+    private ArrayList<Cell>  cells;
+    private City city;
+    private Bridge bridge;
+    private River river;
+    private Jungle jungle;
+    private Hill hill;
+    private Ground ground;
+    private Haven haven ;
     private People people;
     private Tank tank;
     private Gunnery gunnery;
@@ -24,6 +33,21 @@ public class Play {
         gunnery = new Gunnery();
         people = new People();
         dice = new Dice();
+        cells = new ArrayList<>();
+        city = new City();
+        bridge = new Bridge();
+        river = new River();
+        jungle = new Jungle();
+        hill = new Hill();
+        ground = new Ground();
+        haven = new Haven();
+        cells.add(city);
+        cells.add(bridge);
+        cells.add(river);
+        cells.add(jungle);
+        cells.add(hill);
+        cells.add(ground);
+        cells.add(haven);
     }
     public void setPlayers()
     {
@@ -104,7 +128,6 @@ public class Play {
     }
     public void canAttack(Player p)
     {
-        int i = 0;
         int distance,diceNumber,newDice;
         ArrayList<Integer> dices = new ArrayList<>();
         for (int forceLoc: playGround.getChangedForces().keySet())
@@ -117,20 +140,78 @@ public class Play {
                 Scanner scanner1 = new Scanner(System.in);
                 String loc = scanner1.nextLine();
                 String[] targetXY = loc.split(" ",2);
-                distance = calculateDistance(forceLoc/10 , forceLoc%10 , targetXY);
+                distance = (int)Math.round(calculateDistance(forceLoc/10 , forceLoc%10 , targetXY));
                 System.out.println("distance "+distance);
-                if(playGround.getChosenForces().get(i).getAttackRange() > distance)
+                if(playGround.getChosenForces().get(forceLoc).getAttackRange() > distance)
                 {
-                    diceNumber = playGround.getChosenForces().get(i).getDiceNumber(distance);
+                    if (playGround.getCells().containsKey(forceLoc))
+                        System.out.println("****"+playGround.getCells().get(forceLoc));
+                    int targetNum = 0;
+                    int attackerNum = 0;
+                    int targetLoc = playGround.setLocation(Integer.parseInt(String.valueOf(targetXY[0])) ,
+                            Integer.parseInt(String.valueOf(targetXY[1])));
+                    if(playGround.getForces().containsKey(targetLoc*10+1))
+                        targetNum = 1;
+                    else if(playGround.getForces().containsKey(targetLoc*10+2))
+                        targetNum = 2;
+                    else if(playGround.getForces().containsKey(targetLoc*10+3))
+                        targetNum = 3;
+
+                    else if(playGround.getForces().containsKey(targetLoc*10+4))
+                        targetNum = 4;
+
+                    if(playGround.getForces().containsKey(forceLoc*10+1))
+                        attackerNum = 1;
+                    else if(playGround.getForces().containsKey(forceLoc*10+2))
+                        attackerNum = 2;
+                    else if(playGround.getForces().containsKey(forceLoc*10+3))
+                        attackerNum = 3;
+
+                    else if(playGround.getForces().containsKey(forceLoc*10+4))
+                        attackerNum = 4;
+                    System.out.println("********"+playGround.getForces().get(targetLoc*10+targetNum));
+
+                    diceNumber = playGround.getChosenForces().get(forceLoc).getDiceNumber(distance);
+
+                    if((playGround.getCells().get(forceLoc).equals("jungle") &&
+                            jungle.check(forceLoc)) ||
+                            (playGround.getCells().get(forceLoc).equals("city") &&
+                                    city.check(forceLoc)) ||
+                            !(playGround.getCells().get(forceLoc).equals("jungle")) ||
+                            !((playGround.getCells().get(forceLoc).equals("city"))))
+                    {
+                        for (Cell cell : cells)
+                        {
+                            if (playGround.getCells().containsKey(targetLoc) &&
+                                    cell.getName().equals(playGround.getCells().get(targetLoc))) {
+                                diceNumber = cell.checkDice(playGround.getForces().get(targetLoc*10+targetNum),
+                                        playGround.getForces().get(forceLoc*10+attackerNum),diceNumber);
+                            }
+                            if(playGround.getCells().get(forceLoc).equals("jungle"))
+                            {
+                                diceNumber = 0;
+                            }
+                            else if (cell.getName().equals("city"))
+                            {
+
+                            }
+                        }
+                        if(playGround.getCells().get(forceLoc).equals("city") &&
+                        playGround.getForces().get(forceLoc*10+attackerNum).contains("tank"))
+                            diceNumber -= 2;
+
+                    }
+                    else
+                        diceNumber = 0;
+
                     for(int j = 0; j < diceNumber; j++)
                     {
                         newDice = dice.newDice();
                         dices.add(newDice);
-                        System.out.print("dice" + ++i + ": " + newDice + "  ");
+                        System.out.print("dice" + ": " + newDice + "  ");
                     }
-                    attack(dice.getValidForces(),targetXY);
-                    System.out.println("forces: "
-                            + playGround.getForces().toString());
+                    if(dices.size() > 0)
+                        attack(dice.getValidForces(),targetXY,p);
                     draw.print(p.getCharacter());
                     dice.clearDice();
                     System.out.println();
@@ -139,19 +220,19 @@ public class Play {
                 {
                     System.out.println("YOU CAN'T ATTACK");
                 }
+                printScore(p);
             }
             else
             {
                 playGround.getChangedForces().get(forceLoc);
                 System.out.println("**YOU CAN'T ATTACK");
             }
-            i++;
         }
         playGround.deleteChosenForces();
         playGround.deleteChangedForces();
         //////////badesh hatman remove kon vaghti halghe tamoom shod khast bere soraaghe bazikone badi
     }
-    public void attack(ArrayList<String> validForces,String[] targetXY)
+    public void attack(ArrayList<String> validForces,String[] targetXY,Player player)
     {
         int num = 0;
         int attackFlag = 0;
@@ -181,35 +262,52 @@ public class Play {
         {
             int newKey = loc * 10 + num - 1;
             playGround.updateForceArray(newKey);
+            player.addScore();
+            if(newKey % 10 == 0)
+                player.addMedal();
         }
     }
-    ////naghese
-    public int calculateDistance(int forceX , int forceY , String[] xy)
+    public double calculateDistance(int x , int y , String[] xy)
     {
-        int distance = 0;
-
-        if (forceY == Integer.parseInt(String.valueOf(xy[1])))
+        double distance = 0;
+        double distanceX = 0;
+        double distanceY = 0;
+        Double forceX = new Double(x);
+        Double forceY = new Double(y);
+        if (forceY == Double.parseDouble(String.valueOf(xy[1])))
         {
-            if(forceX > Integer.parseInt(String.valueOf(xy[0])))
-                distance = forceX - Integer.parseInt(String.valueOf(xy[0]));
+            if(forceX > Double.parseDouble(String.valueOf(xy[0])))
+                distance = forceX - Double.parseDouble(String.valueOf(xy[0]));
             else
-                distance = - forceX + Integer.parseInt(String.valueOf(xy[0]));
+                distance = - forceX + Double.parseDouble(String.valueOf(xy[0]));
         }
-        else if (forceX == Integer.parseInt(String.valueOf(xy[0])))
+        else if (forceX == Double.parseDouble(String.valueOf(xy[0])))
         {
-            if(forceY % 2 == Integer.parseInt(String.valueOf(xy[1])) % 2)
+            if(forceY % 2 == Double.parseDouble(String.valueOf(xy[1])) % 2)
             {
-                if (forceY > Integer.parseInt(String.valueOf(xy[1])))
+                if (forceY > Double.parseDouble(String.valueOf(xy[1])))
                 {
-                    distance = forceY - Integer.parseInt(String.valueOf(xy[1]));
+                    distance = forceY - Double.parseDouble(String.valueOf(xy[1]));
                 }
                 else
                 {
-                    distance = - forceY + Integer.parseInt(String.valueOf(xy[1]));
+                    distance = - forceY + Double.parseDouble(String.valueOf(xy[1]));
                 }
                 return distance;
             }
         }
+        if(forceX > Double.parseDouble(String.valueOf(xy[0])))
+            distanceX = forceX - Double.parseDouble(String.valueOf(xy[0]));
+        else
+            distanceX = - forceX + Double.parseDouble(String.valueOf(xy[0]));
+
+        if (forceY > Double.parseDouble(String.valueOf(xy[1])))
+            distanceY = forceY - Double.parseDouble(String.valueOf(xy[1]));
+        else
+            distanceY = - forceY + Double.parseDouble(String.valueOf(xy[1]));
+
+        Double d= distanceX*distanceX + distanceY*distanceY;
+        distance = Math.sqrt(d);
         return distance;
     }
     public void getNewCard(Player p)
@@ -218,31 +316,47 @@ public class Play {
         System.out.println("NEW CARDS:");
         p.printCards();
     }
+    public void printScore(Player player)
+    {
+        System.out.println(player.getCharacter()+" score: "+player.getScore());
+    }
     public void playGame()
     {
         setPlayers();
-        //        Axis cards
-        draw.print(player1.getCharacter());
-        player1.setCards(playGround.allocateCards(2));
-        player1.printCards();
-        System.out.print("Choose a card: ");
-        Scanner sc1 = new Scanner(System.in);
-        String card1 = sc1.nextLine();
-        int max = player1.chooseCard(card1);
-        selectForce(max, player1);
-        canAttack(player1);
-        getNewCard(player1);
-//        //Allied card
-        draw.print(player2.getCharacter());
-        player2.setCards(playGround.allocateCards(4));
-        player2.printCards();
-        System.out.print("Choose a card: ");
-        Scanner sc2 = new Scanner(System.in);
-        String card2 = sc2.nextLine();
-        max = player2.chooseCard(card2);
-        selectForce(max, player2);
-        canAttack(player2);
-        getNewCard(player2);
+        while (player1.getMedal() < 6 || player2.getMedal() < 6)
+        {
+//            Axis cards
+            draw.print(player1.getCharacter());
+            player1.setCards(playGround.allocateCards(2));
+            player1.printCards();
+            System.out.print("Choose a card: ");
+            Scanner sc1 = new Scanner(System.in);
+            String card1 = sc1.nextLine();
+            int max = player1.chooseCard(card1);
+            selectForce(max, player1);
+            canAttack(player1);
+            getNewCard(player1);
+//        Allied card
+            draw.print(player2.getCharacter());
+            player2.setCards(playGround.allocateCards(4));
+            player2.printCards();
+            System.out.print("Choose a card: ");
+            Scanner sc2 = new Scanner(System.in);
+            String card2 = sc2.nextLine();
+            max = player2.chooseCard(card2);
+            selectForce(max, player2);
+            canAttack(player2);
+            getNewCard(player2);
+        }
+        endGame(player1, player2);
+    }
+
+    public void endGame(Player player1, Player player2)
+    {
+        if(player1.getMedal() == 6)
+            System.out.println(player1.getName() + " WON WITH 6 MEDALS");
+        else if(player2.getMedal() == 6)
+            System.out.println(player2.getName() + " WON WITH 6 MEDALS");
     }
 
 }

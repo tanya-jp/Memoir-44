@@ -7,6 +7,8 @@ public class Player {
     final String TEXT_RESET = "\u001B[0m";
     private String name;
     private String character;
+    private int score;
+    private int medal;
     private ArrayList<Card> cards;
     private ArrayList<Integer> chosenForcesLoc;
     //1
@@ -24,6 +26,8 @@ public class Player {
     {
         cards = new ArrayList<>();
         chosenForcesLoc = new ArrayList<>();
+        this.score = 0;
+        this.medal = 0;
     }
 
     public void setName(String name)
@@ -41,6 +45,22 @@ public class Player {
     public String getCharacter()
     {
         return character;
+    }
+    public void addScore()
+    {
+        this.score++;
+    }
+    public int getScore()
+    {
+        return score;
+    }
+    public void addMedal()
+    {
+        this.medal++;
+    }
+    public int getMedal()
+    {
+        return medal;
     }
     public void makeCards()
     {

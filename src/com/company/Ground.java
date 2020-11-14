@@ -24,4 +24,10 @@ public class Ground extends Cell{
     {
         return ANSI_BG_WHITE;
     }
+
+    @Override
+    public int checkDice(String target, String attacker, int diceNumber)
+    {
+        return diceNumber;
+    }
 }

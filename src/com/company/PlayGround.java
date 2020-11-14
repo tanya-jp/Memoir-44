@@ -25,7 +25,8 @@ public class PlayGround {
     //bank of used cards
     private HashMap<String,Integer> usedCards;
     //target forces
-    private ArrayList<Force> chosenForces;
+    private HashMap<Integer,Force> chosenForces;
+    private ArrayList<String> xy ;
     //1
     private Card purpleCard ;
     //2
@@ -52,7 +53,8 @@ public class PlayGround {
         changedForces = new HashMap<>();
         cards = new HashMap<>();
         usedCards = new HashMap<>();
-        chosenForces = new ArrayList<Force>();
+        chosenForces = new HashMap<>();
+        xy = new ArrayList<>();
         //1
         Card purpleCard = new PurpleCard();
         //2
@@ -245,6 +247,34 @@ public class PlayGround {
     }
 
     /**
+     * Sets directions while it is acceptable
+     * @param validMovingNumber as the cell number that force can move
+     * @return the cell number that force moved
+     */
+    public int  enterDirection(int validMovingNumber)
+    {
+        int movingNumber;
+        xy.clear();
+        do
+        {
+            movingNumber = 0;
+            System.out.println("Enter directions:");
+            Scanner scanner = new Scanner(System.in);
+            String dir = scanner.nextLine();
+            String[] XY = dir.split(" ");
+            for(int j = 0; j < XY.length; j++)
+                movingNumber += Integer.parseInt(String.valueOf(XY[j].charAt(0)));
+            if(movingNumber > validMovingNumber)
+                System.out.println("ERROR!");
+            else
+            {
+                for(int k = 0; k < XY.length; k++)
+                    xy.add(XY[k]);
+            }
+        }while(movingNumber > validMovingNumber);
+        return movingNumber;
+    }
+    /**
      * Changes force location during the game
      * @param x as x
      * @param y as y
@@ -277,26 +307,10 @@ public class PlayGround {
         else
             validMovingNumber = gunnery.getRange();
 
-        ArrayList<String> xy = new ArrayList<>();
-        do
-        {
-            movingNumber = 0;
-            System.out.println("Enter directions:");
-            Scanner scanner = new Scanner(System.in);
-            String dir = scanner.nextLine();
-            String[] XY = dir.split(" ");
-            for(int j = 0; j < XY.length; j++)
-                movingNumber += Integer.parseInt(String.valueOf(XY[j].charAt(0)));
-            if(movingNumber > validMovingNumber)
-                System.out.println("ERROR!");
-            else
-            {
-                for(int k = 0; k < XY.length; k++)
-                    xy.add(XY[k]);
-            }
-        }while(movingNumber > validMovingNumber);
+        movingNumber = enterDirection(validMovingNumber);
 
-        for(int i = 0; i < xy.size(); i++)
+        int i = 0 ;
+        while (i < xy.size())
         {
             if(xy.get(i).charAt(1) == 'L')
                 for(int j = 0 ; j < Integer.parseInt(String.valueOf(xy.get(i).charAt(0))) ; j++)
@@ -314,7 +328,6 @@ public class PlayGround {
                         if(xy.get(i).charAt(2) == 'R')
                         {
                             newX++;
-                            System.out.println(newX + "     NEWX");
                         }
                     }
                     else if(newY % 2 ==1)
@@ -327,29 +340,48 @@ public class PlayGround {
                     else if (xy.get(i).charAt(1) == 'D')
                     {
                         newY++;
-                        System.out.println(newY + "    NEWY");
                     }
                 }
             }
+            if (cells.containsKey(setLocation(newX,newY)) && cells.get(setLocation(newX,newY)).equals("river"))
+            {
+                System.out.println("YOU CAN'T ENTER THE RIVER!");
+                movingNumber = enterDirection(validMovingNumber);
+                newX = x;
+                newY = y;
+                i = 0;
+            }
+            else if(cells.containsKey(setLocation(newX,newY)) && cells.get(setLocation(newX,newY)).equals("haven")
+            && (forces.get(loc*10+num).contains("tank") || forces.get(loc*10+num).contains("gunnery")))
+            {
+                System.out.println("YOU CAN'T ENTER THE HAVEN!");
+                movingNumber = enterDirection(validMovingNumber);
+                newX = x;
+                newY = y;
+                i = 0;
+            }
+            else
+                i++;
 
         }
+
         newLoc = setLocation(newX, newY);
         System.out.println(newLoc);
         forces.put(newLoc*10 + num,forces.get(loc*10+num));
         if(forces.get(loc*10+num).contains("people"))
         {
             changedForces.put(newLoc,people.canAttack(movingNumber));
-            chosenForces.add(people);
+            chosenForces.put(newLoc,people);
         }
         else if(forces.get(loc*10+num).contains("tank"))
         {
             changedForces.put(newLoc,tank.canAttack(movingNumber));
-            chosenForces.add(tank);
+            chosenForces.put(newLoc,tank);
         }
         else
         {
             changedForces.put(newLoc,gunnery.canAttack(movingNumber));
-            chosenForces.add(gunnery);
+            chosenForces.put(newLoc,gunnery);
         }
 
         forces.remove(loc*10+num);
@@ -373,10 +405,10 @@ public class PlayGround {
     }
 
     /**
-     * Gets chosen force respectively
+     * Gets chosen force with location of attacker
      * @return chosenForces
      */
-    public ArrayList<Force> getChosenForces()
+    public HashMap<Integer,Force> getChosenForces()
     {
         return chosenForces;
     }

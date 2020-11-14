@@ -18,4 +18,6 @@ public abstract class Cell extends Location{
     abstract String getName();
 
     abstract String getColor();
+
+    abstract int checkDice(String target, String attacker, int diceNumber);
 }

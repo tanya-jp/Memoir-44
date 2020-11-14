@@ -24,4 +24,11 @@ public class River extends Cell{
     {
         return ANSI_BRIGHT_BG_BLUE;
     }
+
+    @Override
+    public int checkDice(String target, String attacker, int diceNumber)
+    {
+        diceNumber = 0;
+        return diceNumber;
+    }
 }

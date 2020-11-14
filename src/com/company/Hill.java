@@ -24,4 +24,13 @@ public class Hill extends Cell{
     {
         return ANSI_BG_YELLOW;
     }
+
+    @Override
+    public int checkDice(String target, String attacker, int diceNumber)
+    {
+        if(attacker.contains("tank") ||
+        attacker.contains("people"))
+            diceNumber--;
+        return diceNumber;
+    }
 }
