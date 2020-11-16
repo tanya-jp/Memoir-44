@@ -247,6 +247,28 @@ public class PlayGround {
     }
 
     /**
+     * Returns how many forces is in cell
+     * @param x as x
+     * @param y as y
+     * @return number of forces
+     */
+    public int findForceNum(int x, int y)
+    {
+        int loc = setLocation(x,y);
+        int num = 0;
+        if(forces.containsKey(loc*10+1))
+            num = 1;
+        else if(forces.containsKey(loc*10+2))
+            num = 2;
+        else if(forces.containsKey(loc*10+3))
+            num = 3;
+
+        else if(forces.containsKey(loc*10+4))
+            num = 4;
+
+        return num;
+    }
+    /**
      * Sets directions while it is acceptable
      * @param validMovingNumber as the cell number that force can move
      * @return the cell number that force moved
@@ -274,12 +296,43 @@ public class PlayGround {
         }while(movingNumber > validMovingNumber);
         return movingNumber;
     }
+
+    /**
+     * Checks if the force can enter this cell or not.
+     * @param newX
+     * @param newY
+     * @param num
+     * @return
+     */
+    public boolean checkErrors(int newX, int newY, int num, int loc)
+    {
+        if (cells.containsKey(setLocation(newX,newY)))
+        {
+            if (cells.get(setLocation(newX, newY)).equals("river"))
+            {
+                System.out.println("YOU CAN'T ENTER THE RIVER!");
+                return false;
+            }
+            else if (cells.get(setLocation(newX, newY)).equals("haven")
+                    && forces.get(loc * 10 + num).contains("tank"))
+            {
+                System.out.println("YOU CAN'T ENTER THE HAVEN!");
+                return false;
+            }
+        }
+        if(findForceNum(newX, newY) > 0)
+        {
+            System.out.println("THIS CELL IS FULL");
+            return false;
+        }
+        return true;
+    }
     /**
      * Changes force location during the game
      * @param x as x
      * @param y as y
      */
-    public void changeForceLocation(int x, int y)
+    public void changeForceLocation(int x, int y, String answer)
     {
         int num = 0;
         int newX = x;
@@ -288,15 +341,9 @@ public class PlayGround {
         int newLoc;
         int validMovingNumber ;
         int movingNumber = 0;
-        if(forces.containsKey(loc*10+1))
-            num = 1;
-        else if(forces.containsKey(loc*10+2))
-            num = 2;
-        else if(forces.containsKey(loc*10+3))
-            num = 3;
 
-        else if(forces.containsKey(loc*10+4))
-            num = 4;
+        num = findForceNum(x,y);
+
         System.out.println(forces.get(loc*10+num));
         if(forces.get(loc*10+num).contains("people"))
             validMovingNumber = people.getRange();
@@ -307,18 +354,39 @@ public class PlayGround {
         else
             validMovingNumber = gunnery.getRange();
 
-        movingNumber = enterDirection(validMovingNumber);
+        if(answer.equals("yes"))
+            movingNumber = enterDirection(validMovingNumber);
 
         int i = 0 ;
-        while (i < xy.size())
+        while (i < xy.size() && answer.equals("yes"))
         {
             if(xy.get(i).charAt(1) == 'L')
                 for(int j = 0 ; j < Integer.parseInt(String.valueOf(xy.get(i).charAt(0))) ; j++)
+                {
                     newX--;
+                    if(!checkErrors(newX, newY, num, loc))
+                    {
+                        movingNumber = enterDirection(validMovingNumber);
+                        newX = x;
+                        newY = y;
+                        i = 0;
+                        continue;
+                    }
+                }
 
             else if(xy.get(i).charAt(1) == 'R')
                 for(int j = 0 ; j < Integer.parseInt(String.valueOf(xy.get(i).charAt(0))) ; j++)
+                {
                     newX++;
+                    if(!checkErrors(newX, newY, num, loc))
+                    {
+                        movingNumber = enterDirection(validMovingNumber);
+                        newX = x;
+                        newY = y;
+                        i = 0;
+                        continue;
+                    }
+                }
             else if(xy.get(i).length() > 2)
             {
                 for(int j = 0 ; j < Integer.parseInt(String.valueOf(xy.get(i).charAt(0))) ; j++)
@@ -341,20 +409,19 @@ public class PlayGround {
                     {
                         newY++;
                     }
+                    if(!checkErrors(newX, newY, num, loc))
+                    {
+                        movingNumber = enterDirection(validMovingNumber);
+                        newX = x;
+                        newY = y;
+                        i = 0;
+                        continue;
+                    }
+
                 }
             }
-            if (cells.containsKey(setLocation(newX,newY)) && cells.get(setLocation(newX,newY)).equals("river"))
+            if(!checkErrors(newX, newY, num, loc))
             {
-                System.out.println("YOU CAN'T ENTER THE RIVER!");
-                movingNumber = enterDirection(validMovingNumber);
-                newX = x;
-                newY = y;
-                i = 0;
-            }
-            else if(cells.containsKey(setLocation(newX,newY)) && cells.get(setLocation(newX,newY)).equals("haven")
-            && (forces.get(loc*10+num).contains("tank") || forces.get(loc*10+num).contains("gunnery")))
-            {
-                System.out.println("YOU CAN'T ENTER THE HAVEN!");
                 movingNumber = enterDirection(validMovingNumber);
                 newX = x;
                 newY = y;
@@ -362,12 +429,10 @@ public class PlayGround {
             }
             else
                 i++;
-
         }
 
         newLoc = setLocation(newX, newY);
-        System.out.println(newLoc);
-        forces.put(newLoc*10 + num,forces.get(loc*10+num));
+
         if(forces.get(loc*10+num).contains("people"))
         {
             changedForces.put(newLoc,people.canAttack(movingNumber));
@@ -384,11 +449,16 @@ public class PlayGround {
             chosenForces.put(newLoc,gunnery);
         }
 
-        forces.remove(loc*10+num);
+        if(answer.equals("yes"))
+        {
+            forces.put(newLoc*10 + num,forces.get(loc*10+num));
+            forces.remove(loc*10+num);
+        }
     }
 
+
     /**
-     * Gets a HashMap of forces that thei locations have been changed
+     * Gets a HashMap of forces that their locations have been changed
      * @return a HashMap that key is new xy of changed forces and value is their attack ability
      */
     public HashMap<Integer,Boolean> getChangedForces()

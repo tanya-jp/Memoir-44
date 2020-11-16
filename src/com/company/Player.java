@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 public class Player {
     final String TEXT_RESET = "\u001B[0m";
+    private String tag;
     private String name;
     private String character;
     private int score;
@@ -30,6 +31,14 @@ public class Player {
         this.medal = 0;
     }
 
+    public void setTag(String tag)
+    {
+        this.tag = tag;
+    }
+    public String getTag()
+    {
+        return tag;
+    }
     public void setName(String name)
     {
         this.name = name;

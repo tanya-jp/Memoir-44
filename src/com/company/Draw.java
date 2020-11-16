@@ -121,31 +121,10 @@ public class Draw {
                     flag = 0;
                     int forceNum = 0;
                     //Checks if there is a force in this cell
-                    if(playGround.getForces().containsKey(loc*10))
-                    {
-                        forceNum = 0;
-                        flag ++;
-                    }
-                    else if(playGround.getForces().containsKey(loc*10+1))
-                    {
-                        forceNum = 1;
-                        flag ++;
-                    }
-                    else if(playGround.getForces().containsKey(loc*10+2))
-                    {
-                        forceNum = 2;
-                        flag ++;
-                    }
-                    else if(playGround.getForces().containsKey(loc*10+3))
-                    {
-                        forceNum = 3;
-                        flag ++;
-                    }
-                    else if(playGround.getForces().containsKey(loc*10+4))
-                    {
-                        forceNum = 4;
-                        flag ++;
-                    }
+                    forceNum = playGround.findForceNum(loc/10, loc%10);
+                    if(forceNum > 0)
+                        flag++;
+
                     if(flag > 0 && k == 1)
                     {
                         String playerName;

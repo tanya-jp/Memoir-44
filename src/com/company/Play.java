@@ -78,10 +78,12 @@ public class Play {
         String name1 = sc.nextLine();
         player1.setCharacter("AXIS");
         player1.setName(name1);
+        player1.setTag("A ");
         System.out.print("Second player's name as Allied: ");
         String name2 = sc.nextLine();
         player2.setCharacter("ALLIED");
         player2.setName(name2);
+        player2.setTag("B ");
         playGround.setPlayers(player1, player2);
         System.out.println("NOW LET'S FIX OUR PLAY GROUND!");
         System.out.println("Tell me your choices in this way: x y kind of cell");
@@ -113,16 +115,45 @@ public class Play {
         fixForces(8,4,"B ","people");
         fixForces(2,2,"B ","gunnery");
     }
+
     public void selectForce(int max, Player p)
     {
-        for(int j = 0; j < max ; j++)
+        int x = 0;
+        int y = 0;
+        int num;
+        int n = 0;
+        System.out.println("How many forces do you want to choose?");
+        do{
+            Scanner scanner = new Scanner(System.in);
+            n = scanner.nextInt();
+            if(n > max)
+                System.out.println("You can't choose more than " + max);
+        }while (n > max);
+        for(int j = 0; j < n ; j++)
         {
-            System.out.print("Choose a force location: ");
-            Scanner scanner1 = new Scanner(System.in);
-            String loc = scanner1.nextLine();
-            String[] xy = loc.split(" ",2);
-            playGround.changeForceLocation(Integer.parseInt(String.valueOf(xy[0])),
-                    Integer.parseInt(String.valueOf(xy[1])));
+            do{
+                do{
+                    System.out.print("Choose a force location: ");
+
+                    Scanner scanner1 = new Scanner(System.in);
+                    String loc = scanner1.nextLine();
+                    String[] xy = loc.split(" ",2);
+                    x = Integer.parseInt(String.valueOf(xy[0]));
+                    y = Integer.parseInt(String.valueOf(xy[1]));
+                    if(playGround.findForceNum(x, y) == 0)
+                        System.out.println("INVALID FORCE LOCATION!");
+                }while (playGround.findForceNum(x, y) == 0);
+
+                num = playGround.findForceNum(x, y);
+                if(!(playGround.getForces().get(playGround.setLocation(x, y)*10 + num).contains(p.getTag())))
+                    System.out.println("THIS IS NOT YOURS");
+            }while(!(playGround.getForces().get(playGround.setLocation(x, y)*10 + num).contains(p.getTag())));
+
+            System.out.println("Do you want to change location?");
+            Scanner scanner = new Scanner(System.in);
+            String ans = scanner.nextLine();
+
+            playGround.changeForceLocation(x,y,ans);
             draw.print(p.getCharacter());
         }
     }
@@ -150,58 +181,56 @@ public class Play {
                     int attackerNum = 0;
                     int targetLoc = playGround.setLocation(Integer.parseInt(String.valueOf(targetXY[0])) ,
                             Integer.parseInt(String.valueOf(targetXY[1])));
-                    if(playGround.getForces().containsKey(targetLoc*10+1))
-                        targetNum = 1;
-                    else if(playGround.getForces().containsKey(targetLoc*10+2))
-                        targetNum = 2;
-                    else if(playGround.getForces().containsKey(targetLoc*10+3))
-                        targetNum = 3;
+                    targetNum = playGround.findForceNum(Integer.parseInt(String.valueOf(targetXY[0])) ,
+                            Integer.parseInt(String.valueOf(targetXY[1])));
 
-                    else if(playGround.getForces().containsKey(targetLoc*10+4))
-                        targetNum = 4;
+                    attackerNum = playGround.findForceNum(forceLoc/10, forceLoc%10);
 
-                    if(playGround.getForces().containsKey(forceLoc*10+1))
-                        attackerNum = 1;
-                    else if(playGround.getForces().containsKey(forceLoc*10+2))
-                        attackerNum = 2;
-                    else if(playGround.getForces().containsKey(forceLoc*10+3))
-                        attackerNum = 3;
-
-                    else if(playGround.getForces().containsKey(forceLoc*10+4))
-                        attackerNum = 4;
                     System.out.println("********"+playGround.getForces().get(targetLoc*10+targetNum));
 
                     diceNumber = playGround.getChosenForces().get(forceLoc).getDiceNumber(distance);
 
-                    if((playGround.getCells().get(forceLoc).equals("jungle") &&
+                    if((playGround.getCells().containsKey(forceLoc) &&
+                            ((playGround.getCells().get(forceLoc).equals("jungle") &&
                             jungle.check(forceLoc)) ||
                             (playGround.getCells().get(forceLoc).equals("city") &&
                                     city.check(forceLoc)) ||
                             !(playGround.getCells().get(forceLoc).equals("jungle")) ||
-                            !((playGround.getCells().get(forceLoc).equals("city"))))
+                            !((playGround.getCells().get(forceLoc).equals("city"))))) ||
+                            !(playGround.getCells().containsKey(forceLoc)))
                     {
                         for (Cell cell : cells)
                         {
+//                            System.out.println(targetLoc);
+//                            System.out.println(playGround.getCells().get(targetLoc));
                             if (playGround.getCells().containsKey(targetLoc) &&
-                                    cell.getName().equals(playGround.getCells().get(targetLoc))) {
+                                    cell.getName().contains(playGround.getCells().get(targetLoc)))
+                            {
+                                System.out.println(cell.getName());
+                                System.out.println("target " +playGround.getForces().get(targetLoc*10+targetNum ));
+                                System.out.println("attacker" + playGround.getForces().get(forceLoc*10+attackerNum));
                                 diceNumber = cell.checkDice(playGround.getForces().get(targetLoc*10+targetNum),
                                         playGround.getForces().get(forceLoc*10+attackerNum),diceNumber);
                             }
-                            if(playGround.getCells().get(forceLoc).equals("jungle"))
+                            if(playGround.getCells().containsKey(forceLoc) &&
+                                    playGround.getCells().get(forceLoc).equals("jungle"))
                             {
                                 diceNumber = 0;
                             }
-                            else if (cell.getName().equals("city"))
-                            {
-
-                            }
+//                            else if (cell.getName().equals("city"))
+//                            {
+//
+//                            }
                         }
-                        if(playGround.getCells().get(forceLoc).equals("city") &&
-                        playGround.getForces().get(forceLoc*10+attackerNum).contains("tank"))
+                        if(playGround.getCells().containsKey(forceLoc) &&
+                                (playGround.getCells().get(forceLoc).equals("city") &&
+                        playGround.getForces().get(forceLoc*10+attackerNum).contains("tank")))
                             diceNumber -= 2;
 
                     }
-                    else
+                    else if(playGround.getCells().containsKey(forceLoc) &&
+                            (playGround.getCells().get(forceLoc).equals("jungle") ||
+                            playGround.getCells().get(forceLoc).equals("city")))
                         diceNumber = 0;
 
                     for(int j = 0; j < diceNumber; j++)
@@ -212,7 +241,10 @@ public class Play {
                     }
                     if(dices.size() > 0)
                         attack(dice.getValidForces(),targetXY,p);
-                    draw.print(p.getCharacter());
+                    if(diceNumber > 0)
+                        draw.print(p.getCharacter());
+                    else
+                        System.out.println("YOU CAN'T ATTACK");
                     dice.clearDice();
                     System.out.println();
                 }
@@ -238,16 +270,9 @@ public class Play {
         int attackFlag = 0;
         int loc = playGround.setLocation(Integer.parseInt(String.valueOf(targetXY[0])) ,
                 Integer.parseInt(String.valueOf(targetXY[1])));
-        if(playGround.getForces().containsKey(loc*10+1))
-            num = 1;
-        else if(playGround.getForces().containsKey(loc*10+2))
-            num = 2;
-        else if(playGround.getForces().containsKey(loc*10+3))
-            num = 3;
 
-        else if(playGround.getForces().containsKey(loc*10+4))
-            num = 4;
-
+        num = playGround.findForceNum(Integer.parseInt(String.valueOf(targetXY[0])) ,
+                Integer.parseInt(String.valueOf(targetXY[1])));
         for (String force: validForces)
         {
             if((playGround.getForces().get(loc*10+num).contains(force)))

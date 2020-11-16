@@ -28,7 +28,7 @@ public class Haven extends Cell{
     @Override
     public int checkDice(String target, String attacker, int diceNumber)
     {
-        if(target.contains("A"))
+        if(target.contains("A "))
         {
             if(attacker.contains("tank"))
                 diceNumber -= 2;
