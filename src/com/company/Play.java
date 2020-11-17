@@ -1,4 +1,9 @@
 package com.company;
+/**
+ * The main part of game happens in this class
+ * @author Tanya Djavaherpour
+ * @version 1.0 2020
+ */
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -6,11 +11,16 @@ import java.util.Scanner;
 import java.lang.Math;
 
 public class Play {
+    //playground of the game
     private PlayGround playGround;
+    //game players
     private Player player1;
     private Player player2;
+    //to draw
     private Draw draw;
+    //game's cells
     private ArrayList<Cell>  cells;
+    //kind of cells
     private City city;
     private Bridge bridge;
     private River river;
@@ -18,10 +28,13 @@ public class Play {
     private Hill hill;
     private Ground ground;
     private Haven haven ;
-    private People people;
-    private Tank tank;
-    private Gunnery gunnery;
+    //dice
     private Dice dice;
+
+    /**
+     * Constructs a new game by giving it's playground
+     * @param pg as game playground
+     */
     public Play(PlayGround pg)
     {
         playGround = new PlayGround();
@@ -29,9 +42,6 @@ public class Play {
         player1 = new Player();
         player2 = new Player();
         draw = new Draw(pg);
-        tank = new Tank();
-        gunnery = new Gunnery();
-        people = new People();
         dice = new Dice();
         cells = new ArrayList<>();
         city = new City();
@@ -41,6 +51,7 @@ public class Play {
         hill = new Hill();
         ground = new Ground();
         haven = new Haven();
+        //adds different kinds of cells to arrayList
         cells.add(city);
         cells.add(bridge);
         cells.add(river);
@@ -49,12 +60,23 @@ public class Play {
         cells.add(ground);
         cells.add(haven);
     }
+
+    /**
+     * Sets players by getting them from playground
+     */
     public void setPlayers()
     {
         player1 = playGround.getAxis();
         player2 = playGround.getAllied();
     }
 
+    /**
+     * Fixes chosen forces in the beginning of the game.
+     * @param max number of forces that this team has.
+     * @param number the number of forces in every group.
+     * @param group the team who is fixing their forces
+     * @param forceName name of the forces that are being chosen
+     */
     public void fixForces(int max,int number, String group, String forceName)
     {
         String force = group.concat(forceName);
@@ -70,6 +92,10 @@ public class Play {
                     number, force);
         }
     }
+
+    /**
+     * Sets information and fixes the cells and forces.
+     */
     public void fixGame()
     {
         System.out.println("First let us know your names");
@@ -106,7 +132,6 @@ public class Play {
         }
         System.out.println("Tell me your choices in this way: x y");
         System.out.println("EXAMPLE: 1 1");
-//        System.out.println("And please enter OK to finish");
         System.out.println("NOW LET'S FIX AXIS'S FORCES");
         fixForces(6, 4,"A ","tank");
         fixForces(7,4,"A ","people");
@@ -116,6 +141,11 @@ public class Play {
         fixForces(2,2,"B ","gunnery");
     }
 
+    /**
+     * Player chooses which forces he/she wants to play with.
+     * @param max as max players that can be chosen that chosen card sets.
+     * @param p as player who is playing
+     */
     public void selectForce(int max, Player p)
     {
         int x = 0;
@@ -157,6 +187,12 @@ public class Play {
             draw.print(p.getCharacter());
         }
     }
+
+    /**
+     * Sets new target and checks if player can attack by checking
+     * current cell of attacker and target
+     * @param p as player who is playing
+     */
     public void canAttack(Player p)
     {
         int distance,diceNumber,newDice;
@@ -201,8 +237,6 @@ public class Play {
                     {
                         for (Cell cell : cells)
                         {
-//                            System.out.println(targetLoc);
-//                            System.out.println(playGround.getCells().get(targetLoc));
                             if (playGround.getCells().containsKey(targetLoc) &&
                                     cell.getName().contains(playGround.getCells().get(targetLoc)))
                             {
@@ -217,10 +251,6 @@ public class Play {
                             {
                                 diceNumber = 0;
                             }
-//                            else if (cell.getName().equals("city"))
-//                            {
-//
-//                            }
                         }
                         if(playGround.getCells().containsKey(forceLoc) &&
                                 (playGround.getCells().get(forceLoc).equals("city") &&
@@ -262,8 +292,14 @@ public class Play {
         }
         playGround.deleteChosenForces();
         playGround.deleteChangedForces();
-        //////////badesh hatman remove kon vaghti halghe tamoom shod khast bere soraaghe bazikone badi
     }
+
+    /**
+     * Checks if player can attack by checking the list of forces that can be target for dice numbers
+     * @param validForces as list of forces that can be target
+     * @param targetXY as location of target
+     * @param player as player who is playing
+     */
     public void attack(ArrayList<String> validForces,String[] targetXY,Player player)
     {
         int num = 0;
@@ -292,6 +328,14 @@ public class Play {
                 player.addMedal();
         }
     }
+
+    /**
+     * Calculates the distance between target and attacker
+     * @param x as x of attacker's location
+     * @param y as y of attacker's location
+     * @param xy as target's location
+     * @return the distance between attacker and target
+     */
     public double calculateDistance(int x , int y , String[] xy)
     {
         double distance = 0;
@@ -335,16 +379,30 @@ public class Play {
         distance = Math.sqrt(d);
         return distance;
     }
+
+    /**
+     * Player gts new card after using one of them
+     * @param p as the player who is playing
+     */
     public void getNewCard(Player p)
     {
         p.setCards(playGround.allocateCards(1));
         System.out.println("NEW CARDS:");
         p.printCards();
     }
+
+    /**
+     * Prints score of the player after every attack
+     * @param player as player who is playing
+     */
     public void printScore(Player player)
     {
         System.out.println(player.getCharacter()+" score: "+player.getScore());
     }
+
+    /**
+     * Loop of playing game repeats in this method
+     */
     public void playGame()
     {
         setPlayers();
@@ -376,6 +434,12 @@ public class Play {
         endGame(player1, player2);
     }
 
+    /**
+     * When one of the players got 6 medals or arrived to specific cell this method runs
+     * to say who won the game
+     * @param player1 as Axis
+     * @param player2 as Allied
+     */
     public void endGame(Player player1, Player player2)
     {
         if(player1.getMedal() == 6)
