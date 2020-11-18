@@ -7,6 +7,7 @@ package com.company;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.lang.Math;
 
@@ -70,6 +71,32 @@ public class Play {
         player2 = playGround.getAllied();
     }
 
+    /**
+     * Checks if there is force in jungle and city in the beginning
+     */
+    public void checkJungleCity()
+    {
+        int limit;
+        for(int j = 1; j <= 9; j++)
+        {
+            if(j % 2 == 1)
+                limit = 13;
+            else
+                limit = 12;
+            for(int i = 1; i <= limit ; i++)
+            {
+                int loc = playGround.setLocation(i,j);
+                if(playGround.getCells().containsValue(loc))
+                {
+                    if(playGround.getCells().get(loc).equals("jungle"))
+                        jungle.check(loc);
+                    else if(playGround.getCells().get(loc).equals("city"))
+                        city.check(loc);
+                }
+
+            }
+        }
+    }
     /**
      * Fixes chosen forces in the beginning of the game.
      * @param max number of forces that this team has.
@@ -139,6 +166,20 @@ public class Play {
         fixForces(3,3,"B ","tank");
         fixForces(8,4,"B ","people");
         fixForces(2,2,"B ","gunnery");
+
+        System.out.println("Choose golden cell for AXIS");
+        Scanner sc1 = new Scanner(System.in);
+        String axisLoc = sc1.nextLine();
+        String[] choice = axisLoc.split(" ",2);
+        player1.setChosenLoc(playGround.setLocation(Integer.parseInt(String.valueOf(choice[0])),
+                Integer.parseInt(String.valueOf(choice[1]))));
+        System.out.println("Choose golden cell for ALLIED");
+        Scanner sc2 = new Scanner(System.in);
+        String alliedLoc = sc2.nextLine();
+        String[] choice2 = alliedLoc.split(" ",2);
+        player2.setChosenLoc(playGround.setLocation(Integer.parseInt(String.valueOf(choice2[0])),
+                Integer.parseInt(String.valueOf(choice2[1]))));
+
     }
 
     /**
@@ -146,8 +187,9 @@ public class Play {
      * @param max as max players that can be chosen that chosen card sets.
      * @param p as player who is playing
      */
-    public void selectForce(int max, Player p)
+    public boolean selectForce(int max, Player p, String card)
     {
+        boolean res = false;
         int x = 0;
         int y = 0;
         int num;
@@ -159,9 +201,11 @@ public class Play {
             if(n > max)
                 System.out.println("You can't choose more than " + max);
         }while (n > max);
+        int cnt = 0;
         for(int j = 0; j < n ; j++)
         {
             do{
+                cnt = 0;
                 do{
                     System.out.print("Choose a force location: ");
 
@@ -172,20 +216,33 @@ public class Play {
                     y = Integer.parseInt(String.valueOf(xy[1]));
                     if(playGround.findForceNum(x, y) == 0)
                         System.out.println("INVALID FORCE LOCATION!");
-                }while (playGround.findForceNum(x, y) == 0);
+                    if(card.equals("cyan") && playGround.findForceNum(x, y) != 3)
+                    {
+                        System.out.println("YOU CAN'T CHOOSE THIS GROUP");
+                        cnt++;
+                    }
+                }while (playGround.findForceNum(x, y) == 0 ||
+                        (card.equals("cyan") && playGround.findForceNum(x, y) != 3 && cnt < 13));
 
                 num = playGround.findForceNum(x, y);
                 if(!(playGround.getForces().get(playGround.setLocation(x, y)*10 + num).contains(p.getTag())))
                     System.out.println("THIS IS NOT YOURS");
             }while(!(playGround.getForces().get(playGround.setLocation(x, y)*10 + num).contains(p.getTag())));
 
-            System.out.println("Do you want to change location?");
-            Scanner scanner = new Scanner(System.in);
-            String ans = scanner.nextLine();
+            if(cnt < 13)
+            {
+                System.out.println("Do you want to change location?");
+                Scanner scanner = new Scanner(System.in);
+                String ans = scanner.nextLine();
 
-            playGround.changeForceLocation(x,y,ans);
+                if(playGround.changeForceLocation(x,y,ans,p))
+                    return true;
+            }
+            else
+                System.out.println("YOU CAN'T MOVE ANE FORCE");
             draw.print(p.getCharacter());
         }
+        return res;
     }
 
     /**
@@ -392,12 +449,13 @@ public class Play {
     }
 
     /**
-     * Prints score of the player after every attack
+     * Prints score and medal of the player after every attack
      * @param player as player who is playing
      */
     public void printScore(Player player)
     {
         System.out.println(player.getCharacter()+" score: "+player.getScore());
+        System.out.println(player.getCharacter()+" medal: "+player.getMedal());
     }
 
     /**
@@ -405,29 +463,35 @@ public class Play {
      */
     public void playGame()
     {
+        boolean res = false;
         setPlayers();
+        checkJungleCity();
+        player1.setCards(playGround.allocateCards(2));
+        player2.setCards(playGround.allocateCards(4));
         while (player1.getMedal() < 6 || player2.getMedal() < 6)
         {
 //            Axis cards
             draw.print(player1.getCharacter());
-            player1.setCards(playGround.allocateCards(2));
             player1.printCards();
             System.out.print("Choose a card: ");
             Scanner sc1 = new Scanner(System.in);
             String card1 = sc1.nextLine();
             int max = player1.chooseCard(card1);
-            selectForce(max, player1);
+            res = selectForce(max, player1,card1);
+            if(res)
+                break;
             canAttack(player1);
             getNewCard(player1);
 //        Allied card
             draw.print(player2.getCharacter());
-            player2.setCards(playGround.allocateCards(4));
             player2.printCards();
             System.out.print("Choose a card: ");
             Scanner sc2 = new Scanner(System.in);
             String card2 = sc2.nextLine();
             max = player2.chooseCard(card2);
-            selectForce(max, player2);
+            res = selectForce(max, player2, card2);
+            if(res)
+                break;
             canAttack(player2);
             getNewCard(player2);
         }

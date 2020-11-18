@@ -1,4 +1,9 @@
 package com.company;
+/**
+ * Keeps players info.
+ * @author Tanya Djavaherpour
+ * @version 1.0 2020
+ */
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -10,6 +15,7 @@ public class Player {
     private String character;
     private int score;
     private int medal;
+    private int chosenLoc;
     private ArrayList<Card> cards;
     private ArrayList<Integer> chosenForcesLoc;
     //1
@@ -23,6 +29,9 @@ public class Player {
     //5
     private Card cyanCard = new CyanCard();
 
+    /**
+     * Constructs new player
+     */
     public Player()
     {
         cards = new ArrayList<>();
@@ -31,50 +40,97 @@ public class Player {
         this.medal = 0;
     }
 
+    /**
+     * Sets A or B
+     * @param tag A or B
+     */
     public void setTag(String tag)
     {
         this.tag = tag;
     }
+
+    /**
+     * Returns players tag
+     * @return tag
+     */
     public String getTag()
     {
         return tag;
     }
+
+    /**
+     * Sets player's name
+     * @param name as player's name
+     */
     public void setName(String name)
     {
         this.name = name;
     }
+
+    /**
+     * Returns player's name
+     * @return anme
+     */
     public String getName()
     {
         return name;
     }
+
+    /**
+     * Sets player's character: AXIS OR ALLIED
+     * @param ch as character
+     */
     public void setCharacter(String ch)
     {
         character = ch;
     }
+
+    /**
+     * Returns player's character
+     * @return AXIS OR ALLIED
+     */
     public String getCharacter()
     {
         return character;
     }
+
+    /**
+     * Increases score
+     */
     public void addScore()
     {
         this.score++;
     }
+
+    /**
+     * Returns score
+     * @return score
+     */
     public int getScore()
     {
         return score;
     }
+    /**
+     * Increases number of medals
+     */
     public void addMedal()
     {
         this.medal++;
     }
+
+    /**
+     * Returns number of medals
+     * @return medals number
+     */
     public int getMedal()
     {
         return medal;
     }
-    public void makeCards()
-    {
 
-    }
+    /**
+     * Sets cards by giving random numbers
+     * @param chosenNumber a random number
+     */
     public void setCards(ArrayList<Integer> chosenNumber)
     {
         for (int num : chosenNumber)
@@ -93,11 +149,20 @@ public class Player {
         }
     }
 
+    /**
+     * Returns added cards
+     * @return list of card
+     */
     public ArrayList<Card> getCards()
     {
         return cards;
     }
 
+    /**
+     * Find which card has been chosen
+     * @param cardType as name of card
+     * @return index of chosen card in arrayList
+     */
     public int findIndex(Card cardType)
     {
         int i = 0;
@@ -109,6 +174,12 @@ public class Player {
         }
         return i;
     }
+
+    /**
+     * Choose card by giving name of it
+     * @param cardName as name of card(color of it)
+     * @return the number of units that can be chosen
+     */
     public int chooseCard(String cardName)
     {
         if(cardName.equals("purple"))
@@ -139,26 +210,9 @@ public class Player {
 
     }
 
-    public void chooseForces(int x, int y)
-    {
-        chosenForcesLoc.add(10 * x + y);
-    }
-
-    public ArrayList<Integer> getChosenForcesLoc()
-    {
-        return chosenForcesLoc;
-    }
-
-    public void clearChosenForcesLoc()
-    {
-        chosenForcesLoc.clear();
-    }
-
-    public void chooseTargets(String cardName)
-    {
-        int number = chooseCard(cardName);
-    }
-
+    /**
+     * Prints player's cards
+     */
     public void printCards()
     {
         System.out.println(character+"'s cards:");
@@ -183,6 +237,13 @@ public class Player {
             System.out.print (card.getColor() + "#############  " + TEXT_RESET);
         }
         System.out.println();
-//        }
+    }
+    public void setChosenLoc(int loc)
+    {
+        chosenLoc = loc;
+    }
+    public int getChosenLoc()
+    {
+        return chosenLoc;
     }
 }

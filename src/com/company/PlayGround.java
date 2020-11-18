@@ -168,18 +168,15 @@ public class PlayGround {
      * @param cardNumber as number of wanted cards
      * @return arrayList of cards
      */
-    public ArrayList<Integer> allocateCards(int cardNumber)
-    {
+    public ArrayList<Integer> allocateCards(int cardNumber) {
         ArrayList<Integer> choices = new ArrayList<>();
-        for( int i = 0; i < cardNumber; i++)
-        {
+        for (int i = 0; i < cardNumber; i++) {
             int flag = 1;
-            if(cards.get("purple") == 0 &&
+            if (cards.get("purple") == 0 &&
                     cards.get("yellow") == 0 &&
                     cards.get("blue") == 0 &&
                     cards.get("green") == 0 &&
-                    cards.get("cyan") == 0 )
-            {
+                    cards.get("cyan") == 0) {
                 /////////player cars are important/////////////////////////////////////////////////////////////////////////
                 cards.replace("purple", 6);
                 cards.replace("yellow", 13);
@@ -192,47 +189,35 @@ public class PlayGround {
                 usedCards.replace("green", 0);
                 usedCards.replace("cyan", 0);
             }
-            while (flag == 1)
-            {
+            while (flag == 1) {
                 flag = 0;
-                Random random = new Random ();
+                Random random = new Random();
                 int r = random.nextInt(5);
                 r++;
-                if(r == 1 && cards.get("purple") != 0)
-                {
+                if (r == 1 && cards.get("purple") != 0) {
                     int v = cards.get("purple") - 1;
-                    cards.replace("purple",v);
-                }
-                else if(r == 2 && cards.get("yellow") != 0)
-                {
+                    cards.replace("purple", v);
+                } else if (r == 2 && cards.get("yellow") != 0) {
                     int v = cards.get("yellow") - 1;
-                    cards.replace("yellow",v);
-                }
-                else if(r == 3 && cards.get("blue") != 0)
-                {
+                    cards.replace("yellow", v);
+                } else if (r == 3 && cards.get("blue") != 0) {
                     int v = cards.get("blue") - 1;
-                    cards.replace("blue",v);
-                }
-                else if(r == 4 && cards.get("green") != 0)
-                {
+                    cards.replace("blue", v);
+                } else if (r == 4 && cards.get("green") != 0) {
                     int v = cards.get("green") - 1;
-                    cards.replace("green",v);
-                }
-                else if(r == 5 && cards.get("cyan") != 0)
-                {
+                    cards.replace("green", v);
+                } else if (r == 5 && cards.get("cyan") != 0) {
                     int v = cards.get("cyan") - 1;
-                    cards.replace("cyan",v);
-                }
-                else
+                    cards.replace("cyan", v);
+                } else
                     flag++;
-                if(flag == 0)
+                if (flag == 0)
                     choices.add(r);
             }
 
         }
         return choices;
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////?
     public void chooseCard(String cardName)
     {
         for (String name: cards.keySet())
@@ -332,8 +317,9 @@ public class PlayGround {
      * @param x as x
      * @param y as y
      */
-    public void changeForceLocation(int x, int y, String answer)
+    public boolean changeForceLocation(int x, int y, String answer, Player p)
     {
+        boolean res = false;
         int num = 0;
         int newX = x;
         int newY = y;
@@ -432,6 +418,12 @@ public class PlayGround {
         }
 
         newLoc = setLocation(newX, newY);
+        if(newLoc == p.getChosenLoc())
+        {
+            System.out.println(p.getName()+" WON!");
+            res = true;
+            return true;
+        }
 
         if(forces.get(loc*10+num).contains("people"))
         {
@@ -454,6 +446,7 @@ public class PlayGround {
             forces.put(newLoc*10 + num,forces.get(loc*10+num));
             forces.remove(loc*10+num);
         }
+        return res;
     }
 
 
